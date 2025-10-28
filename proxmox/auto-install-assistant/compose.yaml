@@ -1,0 +1,7 @@
+services:
+  install-assistant:
+    image: proxmox/install-assistant
+    container_name: proxmox-installer
+    env_file: "${ENV_FILE}"
+    volumes:
+      - ${HOST_ISO_DIR}:${ISO_DIR}

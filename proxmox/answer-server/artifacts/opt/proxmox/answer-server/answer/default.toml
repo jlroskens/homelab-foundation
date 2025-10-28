@@ -1,0 +1,15 @@
+[global]
+keyboard = "en-us"
+country = "us"
+fqdn.source = "from-dhcp"
+mailto = "mail@no.invalid"
+timezone = "America/Phoenix"
+
+[network]
+source = "from-dhcp"
+
+[disk-setup]
+filesystem = "ext4"
+lvm.maxroot = 100
+lvm.swapsize = 0
+filter.DEVNAME = "/dev/nvme0n1"

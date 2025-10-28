@@ -1,0 +1,23 @@
+api:
+  # API endpoint
+  hostname: http://localhost:5380
+zones:
+  # Example of adding a new A record for a Proxmox Host
+  - zone: local.example.com
+    records: # See https://github.com/TechnitiumSoftware/DnsServer/blob/master/APIDOCS.md#add-record for more details
+      - name: pve-host-01        # host name combined with the zone for to set the FQDN domain value
+        type: A                  # Record type: A, AAAA, NS, CNAME, etc
+        ipAddress: 192.168.0.21
+        overwrite: true          # true: creates or updates existing record. false: Creates new records only
+        ptr: true                # true: creates a reverse PTR record for the ipAddress. This option is used only for A and AAAA records.
+        createPtrZone: false     # true: creates a new Ptr Zone for the ip address if it doesn't exist. false: expects PTR zone to already exist if ptr=true.
+dhcp_scopes:
+  # Example assignment of IP address and hostname to an existing DHCP scope
+  - name: local.example.com
+    assignments: # See https://github.com/TechnitiumSoftware/DnsServer/blob/master/APIDOCS.md#add-reserved-lease for additional details
+      - hardwareAddress: 85-DC-6C-AB-BE-31     # The MAC address of the client.
+        ipAddress: 192.168.0.22                # The reserved IP address for the client.
+        hostName: pve-host-02                  # (optional): The hostname of the client to override.
+        # (optional): Comments for the reserved lease entry.
+        comments: |
+          Proxmox Host 02

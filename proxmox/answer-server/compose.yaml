@@ -1,0 +1,12 @@
+services:
+  answer-server:
+    image: proxmox/answer-server:latest
+    container_name: proxmox-answer-server
+    env_file: "${ENV_FILE}"
+    ports:
+      - "${HOST_SERVER_PORT}:${SERVER_PORT}/tcp"
+    restart: unless-stopped
+networks:
+  default:
+    name: internal-bridge-network
+    external: true

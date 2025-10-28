@@ -1,0 +1,9 @@
+# required libraries https://github.com/proxmoxer/proxmoxer/blob/develop/README.rst#installation
+argparse
+dotenv
+logging
+openssh_wrapper
+paramiko
+proxmoxer
+PyYAML
+requests

@@ -1,0 +1,27 @@
+services:
+  web:
+    image: nginx/proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    secrets:
+        - cloudflare_dns_api_token
+    restart: unless-stopped
+    volumes:
+      - lets_encrypt:/etc/letsencrypt
+    networks:
+      - external
+      - internal
+networks:
+  external:
+    name: external-bridge-network
+    external: true
+  internal:
+    name: internal-bridge-network
+    external: true
+secrets:
+  cloudflare_dns_api_token:
+    environment: CLOUDFLARE_DNS_API_TOKEN
+volumes:
+  lets_encrypt:

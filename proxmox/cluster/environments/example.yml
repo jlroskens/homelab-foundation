@@ -1,0 +1,93 @@
+cluster:
+  name: mycluster
+  api:
+    hostname: proxmox.local.example.com
+    api_port: 443
+    protocol: https
+    api_token_env_var: PVE_CLUSTER_API_TOKEN
+    api_token_id: cluster-automation # The unique name / id for the token
+    root_user: root@pam              # User with root access. Password provided to scripts are for this user
+  # Disk configuration for every node on the cluster. Every node will have a zfs disk partioned and replicated
+  # meeting the specs below. Currently only one 
+  zfs_pools:
+    - name: local-cluster-zfs  # Needs to match zfs_disk in node configuration
+      compression: lz4        # [on, off, gzip, lz4, lzjb, zle, zsdt] see: https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html#compression
+      ashift: 12              # Must be a value between 9-12. Almost always 16 for 4KiB. Pool sector size exponent. 
+      raid:
+        level: single         # The raid type [single | mirror | raid10 | raidz | raidz2 | raidz3 | draid | draid2 | draid3]. For single disk (per node) user raid0
+        disks: 1
+  nodes:
+    - node_id: 1              # The node_id. This is the order given to the node in the cluster.
+      node_name: pve-host-01  # The PVE node name, not to be confused with the DNS FQDN / hostname
+      cluster_votes: 1        # Votes this node has for quorum. Useful for clusters < 3 where no qdevice is used, otherwise leave at 1.
+      # Contains information to connect to this node's API endpoint. Needed prior to a node being part of the cluster.
+      # After the cluster is created, then this would only be used for joining a new node.
+      api:
+        hostname: pve-host-01.local.example.com    # Resolvable host name or IP address for the Proxmox host
+        api_port: 8006                             # Port the website / api is listing on (default: 8006)
+        protocol: https                            # Protocol of the website / api (default: https)
+        root_user: root@pam                        # User with root. Password provided to scripts are for this user
+        # The env file to create tha will contain a Proxmox Api Token for the specific host.
+        # The init-authtoken.sh script creates this file, which is used by the cluster.py script.
+        # If you ran the init.sh bootstrap script for this repo, then storing it in the 
+        # "$HOME/environment_vars/" will enable it to be read in as an export whenver you start a new shell
+        api_token_env_var: PVE_HOST01_API_TOKEN
+        api_token_id: node-automation            # The unique name / id for the token
+      # Network configuration for the node
+      network:
+        # Optional list of bridges the cluster script will attempt to create when creating a new cluster or
+        # joining this node to an existing one
+        bridges:
+          - bridge_name: vmbr1          # The unique bridge name. Default format is vmbr#.
+            ip_cidr: 172.16.0.11/24     # the IP and CIDR of the bridge
+            bridge_ports: [ "enp3s0" ]  # List of interfaces that will use the new bridge. Labeled as "Bridge ports" in the UI
+        # Links are used when joining a cluster. All nodes in a cluster need to have an identitical amount of links
+        # One link is required, up to 8 supported.
+        links:
+          - ip_address: 192.168.0.21    # The ip address of the bridge / link
+            priority: 10                # Sets the priority for internal cluster traffic from highest to lowest
+          - ip_address: 172.16.0.11
+            priority: 20                # Set higher than first link, so this link will be used for internal cluster traffic unless it goes offline
+      # Required if a cluster.zfs_pools is specified.
+      zfs_disks:
+        - name: cluster-zfs # must match one of the cluster.zfs_pools[].disk_name
+          # order:            # Optional. When set, adds disks in order of this number to disk configurations > 1. Otherwise follows the order disks are listed here
+          
+          # Filters for finding a device for provisioning a zfs disk. It's not necessary to specify every filter.
+          # You only need to specify as many filters for the amount of cluster.zfs_pools[].raid.disks specified for each pool.
+          # For example if you specified a RAID1 3 disk setup under the cluster.zfs_pools[].raid.disks: section, and you have only 3
+          # model: 'Samsung SSD 990 PRO 1TB' drives installed on the node, then you only need to specify a single filter.
+          filter:
+            model: 'Samsung SSD 990 PRO 1TB'
+            # vendor: Samsung
+            # type: nvme
+            # size: 1000204886016
+            ## devpath and serial are unique. If you use one of these, no reason to set the others.
+            # devpath: /dev/nvme0n1
+            # serial: "XXXXXXXX"
+    - node_id: 2
+      node_name: pve-host-02
+      cluster_votes: 1
+      api:
+        hostname: pve-host-02.local.example.com
+        api_port: 8006
+        protocol: https
+        root_user: root@pam
+        api_token_env_var: PVE_HOST02_API_TOKEN
+        api_token_id: node-automation
+      network:
+        bridges:
+          - bridge_name: vmbr1
+            ip_cidr: 172.16.0.12/24
+            bridge_ports: [ "enp3s0" ]
+        links:
+          - ip_address: 192.168.0.22
+            priority: 10
+          - ip_address: 172.16.0.12
+            priority: 20
+      zfs_disks:
+         - name: cluster-zfs
+           filter:
+            # devpath will only match once. Just make sure you have the right disk if you do this!
+            devpath: /dev/nvme0n1
+  qdevices:
