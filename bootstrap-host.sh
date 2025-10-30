@@ -8,99 +8,124 @@
 #   the $HOME/environment_vars/ directory.
 # - If uncommented, configures the host to use a static IP (needed if hosting DHCP)
 
-# Docker
-# Add Docker's official GPG key:
-sudo apt-get update && sudo apt-get install ca-certificates curl -y
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+main() {
+  echo "## Installing apt packages... ##"
+  install_packages
 
-# Add the repository to Apt sources:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update \
-  && sudo apt-get -y upgrade
+  if [[ -z ${SKIP_DOCKER+x} ]] || [[ "${SKIP_DOCKER^^}" != "TRUE" ]]; then
+    echo "## Installing and configuring docker... ##"
+    install_docker
+  else
+    echo "SKIP_DOCKER flag set. Not installing or configuring docker."
+  fi
 
-# Install Docker
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-# Add current user to docker group
-sudo groupadd docker
-sudo usermod -aG docker $USER
+  echo "## Configuring ~/.profile and ~/.bashrc PATH and environment variables ##"
+  configure_shell_environment
 
-# Create custom docker networks
-# External bridge network
-docker network create -d bridge external-bridge-network
-# Internal docker container network 
-docker network create -d bridge --internal internal-bridge-network
+  echo "#############################################################################################"
+  echo "PreReqs Installed! If this was the first time installing docker, a reboot is likely required."
+}
 
-# Install jq, other prereqs and troubleshooting tools
-sudo apt-get update \
-  && sudo apt-get install -y \
-    jq \
-    wget \
-    golang \
-    whois \
-    dnsutils \
-    python3 python3-pip 
+install_packages() {
+  # Install jq, other prereqs and troubleshooting tools
+  sudo apt-get update \
+    && sudo apt-get install -y \
+      jq \
+      wget \
+      golang \
+      whois \
+      dnsutils \
+      python3 python3-pip 
+      
+    # Install yq (requries go environment path to be set up)
+    go install github.com/mikefarah/yq/v4@latest
 
-# Add Go's bin path
-if ! grep -wq 'PATH="$HOME/go/bin:$PATH"' /$HOME/.profile; then
-echo "Adding $HOME/go/bin to .profile PATH"
-cat <<- 'EOF' >> /$HOME/.profile
+}
 
-# set PATH so it includes user's go bin if it exists
-if [ -d "$HOME/go/bin" ] ; then
-  PATH="$HOME/go/bin:$PATH"
-fi
-EOF
-fi
-#.bashrc
-if ! grep -wq 'PATH="$HOME/go/bin:$PATH"' /$HOME/.bashrc; then
-echo "Adding $HOME/go/bin to .bashrc PATH"
-cat <<- 'EOF' >> /$HOME/.bashrc
+install_docker() {
+  # Docker
+  # Add Docker's official GPG key:
+  sudo apt-get update && sudo apt-get install ca-certificates curl -y
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# set PATH so it includes user's go bin if it exists
-if [ -d "$HOME/go/bin" ] ; then
-  PATH="$HOME/go/bin:$PATH"
-fi
-EOF
-fi
+  # Add the repository to Apt sources:
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update \
+    && sudo apt-get -y upgrade
 
-# Create a directory that environment variable exports can be added to.
-mkdir -p $HOME/environment_vars
+  # Install Docker
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  # Add current user to docker group
+  sudo groupadd docker
+  sudo usermod -aG docker $USER
 
-# Add snippet to source all environment variable export files to .profile and .bashrc
-if ! grep -wq 'environment_vars_snippet' /$HOME/.profile; then
-echo "Adding environment_vars sourcing to .profile"
-cat <<- 'EOF' >> /$HOME/.profile
+  # Create custom docker networks
+  # External bridge network
+  docker network create -d bridge external-bridge-network
+  # Internal docker container network 
+  docker network create -d bridge --internal internal-bridge-network
+}
 
-# Load any exports from files in the environment_vars.
-# environment_vars_snippet
-for f in $HOME/environment_vars/*; do
-   . "$f"
-done
-EOF
-fi
-#.bashrc
-if ! grep -wq 'environment_vars_snippet' /$HOME/.bashrc; then
-echo "Adding environment_vars sourcing to .bashrc"
-cat <<- 'EOF' >> /$HOME/.bashrc
+configure_shell_environment() {
+  # Add Go's bin path
+  if ! grep -wq 'PATH="$HOME/go/bin:$PATH"' /$HOME/.profile; then
+    echo "Adding $HOME/go/bin to .profile PATH"
+    cat <<- 'EOF' >> /$HOME/.profile
 
-# Load any exports from files in the environment_vars.
-# environment_vars_snippet
-for f in $HOME/environment_vars/*; do
-   . "$f"
-done
-EOF
-fi
+      # set PATH so it includes user's go bin if it exists
+      if [ -d "$HOME/go/bin" ] ; then
+        PATH="$HOME/go/bin:$PATH"
+      fi
+		EOF
+  #^ Spaces before EOF is actually a TAB. Required by HEREDOC. Rest of file is space delimited
+  fi
+  #.bashrc
+  if ! grep -wq 'PATH="$HOME/go/bin:$PATH"' /$HOME/.bashrc; then
+    echo "Adding $HOME/go/bin to .bashrc PATH"
+    cat <<- 'EOF' >> /$HOME/.bashrc
 
-# Install yq
-go install github.com/mikefarah/yq/v4@latest
+    # set PATH so it includes user's go bin if it exists
+    if [ -d "$HOME/go/bin" ] ; then
+      PATH="$HOME/go/bin:$PATH"
+    fi
+		EOF
+  fi
 
-echo "#############################################################################################"
-echo "PreReqs Installed! If this was the first time installing docker, a reboot is likely required."
+  # Create a directory that environment variable exports can be added to.
+  mkdir -p $HOME/environment_vars
+
+  # Add snippet to source all environment variable export files to .profile and .bashrc
+  if ! grep -wq 'environment_vars_snippet' /$HOME/.profile; then
+    echo "Adding environment_vars sourcing to .profile"
+    cat <<- 'EOF' >> /$HOME/.profile
+
+      # Load any exports from files in the environment_vars.
+      # environment_vars_snippet
+      for f in $HOME/environment_vars/*; do
+        . "$f"
+      done
+		EOF
+  fi
+  #.bashrc environment_vars
+  if ! grep -wq 'environment_vars_snippet' /$HOME/.bashrc; then
+    echo "Adding environment_vars sourcing to .bashrc"
+    cat <<- 'EOF' >> /$HOME/.bashrc
+
+      # Load any exports from files in the environment_vars.
+      # environment_vars_snippet
+      for f in $HOME/environment_vars/*; do
+        . "$f"
+      done
+		EOF
+  fi
+}
+
+main
 
 # Uncomment and configure the below for setting a static IP address on this device.
 # # Configures a Static IP for when this host will not be a DHCP client, probably because it's a DHCP server.

@@ -49,8 +49,10 @@ fi
 ## - Exports API token as TECHNITIUM_API_TOKEN if sourced.
 . configure-auth.sh
 
-# Configure initial dns zones
-./configure-zones.sh
+if [[ -z ${DNS_SECONDARY+x} ]] || [[ "$DNS_SECONDARY" != "true" ]]; then
+    # Configure initial dns zones
+    ./configure-zones.sh
+fi
 
 if [[ "$DHCP_ENABLED" == "true" ]]; then
     if [[ -z ${API_HOSTNAME+x} ]] || [[ -z ${DNS_ZONE+x} ]] \
