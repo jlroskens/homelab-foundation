@@ -12,7 +12,7 @@ if [[ -z "$1" ]]; then
     exit 1
 fi
 
-repo_path=$2
+repo_path=$1
 
 if [[ -z "$2" ]]; then
     echo "An token is required."
@@ -22,7 +22,7 @@ if [[ -z "$2" ]]; then
     exit 1
 fi
 
-token="$1"
+token="$2"
 
 echo "Downloading actions-runner install"
 # Create a folder
