@@ -37,3 +37,11 @@ omv-confdbadm populate
 
 echo "## Re-deploying network configuration ##"
 omv-salt deploy run systemd-networkd
+
+## Custom ZFS Setup
+apt-get update
+apt-get install zfsutils-linux -y
+apt-get install linux-headers-6.1.0-40-amd64 -y
+wget -O - https://github.com/OpenMediaVault-Plugin-Developers/packages/raw/master/install | bash
+apt-get update
+apt-get install openmediavault-zfs -y
