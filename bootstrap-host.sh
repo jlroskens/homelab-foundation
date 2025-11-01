@@ -9,8 +9,13 @@
 # - If uncommented, configures the host to use a static IP (needed if hosting DHCP)
 
 main() {
-  echo "## Installing apt packages... ##"
-  install_packages
+  if [[ -z ${SKIP_PACKAGES+x} ]] || [[ "${SKIP_PACKAGES^^}" != "TRUE" ]]; then
+    echo "## Installing apt packages... ##"
+    install_packages
+  else
+    echo "SKIP_PACKAGES flag set. Not installing or updating packages."
+  fi
+  
 
   if [[ -z ${SKIP_DOCKER+x} ]] || [[ "${SKIP_DOCKER^^}" != "TRUE" ]]; then
     echo "## Installing and configuring docker... ##"
@@ -28,6 +33,7 @@ main() {
 
 install_packages() {
   # Install jq, other prereqs and troubleshooting tools
+  export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update \
     && sudo apt-get install -y \
       jq \

@@ -1,9 +1,13 @@
 # Ignore environment files except examples
-.env
-*.env
+# .env
+# **/*.env
 **/environments/*
+!**/environments/example.*
+**/.env/*
+!**/.env/example.*
+**/env/*
+!**/env/example.*
 !example.*
-!example.*.*
 
 # Ignore VSCode
 .vscode
