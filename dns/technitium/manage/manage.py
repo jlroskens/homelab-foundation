@@ -387,7 +387,20 @@ def add_dns_zone_record(zone: str, name: str, record_type: str, api_host: str, a
     data = response.json()
     logging.debug(json.dumps(data, indent=4))
 
-    # API returns 200 response code even when no scope is found
+    if "status" in data:
+        logging.info("status in response")
+        if data["status"].casefold() == "error".casefold():
+            logging.info("detected error in response")
+            if data["errorMessage"].casefold() == "cannot add record: record already exists.".casefold():
+                logging.info("error expected")
+                if not overwrite:
+                    logging.info("overriding error")
+                    data["status"] = "ok"
+                    data["message"] = "Record not added. Record already exists."
+                    del data["errorMessage"]
+                    return data
+        
+    # API returns 200 response code even when there was an error
     detect_api_status_error(data)
     
     return data
