@@ -56,7 +56,7 @@ EOM
 
     if [[ $# -eq 0 ]]; then
         echo "$syntax_msg" >&2
-        return 1
+        exit 1
     fi
     
     VAR_FILE="$1"
@@ -66,9 +66,11 @@ EOM
         PASSWORD="$2"
     elif [[ ! -z ${PVE_ROOT_PASSWORD+x} ]]; then
         PASSWORD="${PVE_ROOT_PASSWORD}"
+    elif [[ ! -z ${PROXMOX_VE_PASSWORD+x} ]]; then
+        PASSWORD="${PROXMOX_VE_PASSWORD}"
     else
         echo "$syntax_msg" >&2
-        return 1
+        exit 1
     fi
 }
 

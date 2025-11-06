@@ -1,0 +1,36 @@
+#cloud-config
+apt:
+  sources:
+    docker.list:
+      source: deb [arch=amd64] https://download.docker.com/linux/debian $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+package_update: true
+package_upgrade: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - gnupg-agent
+  - gnupg
+  - software-properties-common
+  - openssh-server
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - git
+  - jq
+  - wget
+  - curl
+  - qemu-guest-agent
+
+allow_public_ssh_keys: true
+ssh_deletekeys: true
+ssh_pwauth: false
+chpasswd: { expire: true }
+
+groups:
+  - docker
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - systemctl reload ssh || systemctl restart ssh

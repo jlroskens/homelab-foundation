@@ -495,6 +495,8 @@ def join_cluster(node_name: str):
     if not _skip_network_bridges:
         # Create any linux bridges specified
         create_node_bridges(join_config)
+        logging.info("** Waiting 30 seconds for network operation to complete before joining. **")
+        time.sleep(30)
 
     # join the node to the cluster
     join_node(cluster_config, join_config, preferred_node, _pve_root_password)
