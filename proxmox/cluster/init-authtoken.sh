@@ -19,7 +19,7 @@ main() {
 
     set_auth_ticket
     
-    create_api_token "$API_TOKEN_ID" 'API Token for automating node configuration via the API'
+    create_api_token "$API_TOKEN_ID" 'API Token created by the homelab-foundation/proxmox/cluster/init.sh and used by the cluster.py script.'
 
     if [[ "$API_TOKEN_ENV_VAR" != "false" ]]; then
         local _api_token="$(jq -r '.data.value' <<< $PVE_API_TOKEN_RESPONSE)"

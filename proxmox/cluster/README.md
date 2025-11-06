@@ -33,7 +33,7 @@ What this did:
 
 ## Changing API Tokens
 
-If a Proxmox Api Token needs to be reset / renewed, then you can simply delete the old one from your the Proxmox website under Datacenter -> API tokens.  Then run this script again and it will create new ones and update your api token environment files. If you don't delete them first, this script will fail with an error message that should be obvious, something like "Api Token already exists".
+If a Proxmox Api Token needs to be reset / renewed, then you can simply delete the old one from your the Proxmox website under Datacenter -> API tokens.  Then run this script again and it will create new ones and update your api token environment files. If you don't delete them first, this script will fail with an error message that should be obvious, something like "Api Token already exists". If there are already nodes in a cluster, then running the init.sh will also log an error about the token already existing for any nodes after the first.
 
 ## Updating / Recreate Python Environment
 - Run the `./init-py.sh` script. 

@@ -1,0 +1,24 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - gnupg-agent
+  - gnupg
+  - software-properties-common
+  - openssh-server
+  - git
+  - jq
+  - wget
+  - curl
+  - qemu-guest-agent
+
+allow_public_ssh_keys: true
+ssh_deletekeys: true
+ssh_pwauth: false
+chpasswd: { expire: true }
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - systemctl reload ssh || systemctl restart ssh
