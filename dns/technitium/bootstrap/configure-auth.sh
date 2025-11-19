@@ -43,11 +43,13 @@ change_password() {
     echo "Updating password for user ${ADMIN_USER}"
     change_password_response=$(curl -Gs --fail ${API_HOSTNAME}/api/user/changePassword \
         -d token="${login_token}" \
-        --data-urlencode pass="${DNS_ADMIN_PASSWORD}")
+        --data pass='admin' \
+        --data-urlencode newPass="${DNS_ADMIN_PASSWORD}")
     password_staus=$(jq -r '.status' <<< $change_password_response)
 
     if [[ $? -ne 0 ]] || [[ "$password_staus" != "ok" ]]; then
     echo "Password update failed with status \"$password_staus\"!"
+    echo "$change_password_response"
     exit 1
     fi
 }

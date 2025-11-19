@@ -14,7 +14,7 @@ set -o allexport && source ${env_file} && set +o allexport
 if [[ -z ${DNS_ADMIN_PASSWORD+x} ]]; then
     echo "DNS_ADMIN_PASSWORD not set but is required by this script."
     echo "  usage: DNS_ADMIN_PASSWORD='1242!14lksaDjrfe@skL' ./configure.sh"
-    return
+    exit
 fi
 
 if [[ -z ${API_HOSTNAME+x} ]] || [[ -z ${ADMIN_USER+x} ]] || [[ -z ${API_TOKEN_NAME+x} ]] || [[ -z ${DNS_ZONE+x} ]] || [[ -z ${DNS_SERVER_NAME+x} ]] || [[ -z ${DNS_HOST_IP+x} ]]; then
@@ -25,7 +25,7 @@ if [[ -z ${API_HOSTNAME+x} ]] || [[ -z ${ADMIN_USER+x} ]] || [[ -z ${API_TOKEN_N
     echo "  DNS_ZONE: The DNS Zone (example: local.example.com)"
     echo "  DNS_SERVER_NAME: The host name for the DNS server (example: dns1)"
     echo "  DNS_HOST_IP: The DNS server's host IP address (example: 192.168.0.6)"
-    return
+    exit
 fi
 
 # Start the docker container
@@ -67,7 +67,7 @@ if [[ "$DHCP_ENABLED" == "true" ]]; then
         echo "  DHCP_ASSIGNMENT_RANGE: The assignment range for the dhcp scope (example: '192.168.0.1|192.168.2.254')"
         echo "  DHCP_SUBNET_MASK: The dns mask of the network (example: 255.255.254.0)"
         echo "  DHCP_ROUTER_ADDRESS: The Gateway/Router IP address to configure over dhcp (example: 192.168.0.6)"
-        return
+        exit
     fi
     ./configure-dhcp.sh
 fi
