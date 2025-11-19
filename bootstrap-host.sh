@@ -143,7 +143,7 @@ main
 # gateway='192.168.0.1'
 # # Set DNS servers to Google's DNS. This can be updated to 127.0.0.1 after bootstraping the DNS server
 # dns_servers='8.8.8.8,8.8.4.4'
-# #dns_servers='127.0.0.1' # After DNS Server is up and running
+# #dns_servers='127.0.0.1,1.1.1.1' # After DNS Server is up and running
 
 # # Configures interface to use a static IP address
 # sudo nmcli c mod "$interface_name" ipv4.addresses $static_ip_cidr ipv4.method manual
