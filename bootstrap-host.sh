@@ -95,10 +95,10 @@ configure_shell_environment() {
     echo "Adding $HOME/go/bin to .bashrc PATH"
     cat <<- 'EOF' >> /$HOME/.bashrc
 
-    # set PATH so it includes user's go bin if it exists
-    if [ -d "$HOME/go/bin" ] ; then
-      PATH="$HOME/go/bin:$PATH"
-    fi
+  # set PATH so it includes user's go bin if it exists
+  if [ -d "$HOME/go/bin" ]; then
+    PATH="$HOME/go/bin:$PATH"
+  fi
 		EOF
   fi
 
@@ -110,11 +110,15 @@ configure_shell_environment() {
     echo "Adding environment_vars sourcing to .profile"
     cat <<- 'EOF' >> /$HOME/.profile
 
-      # Load any exports from files in the environment_vars.
-      # environment_vars_snippet
-      for f in $HOME/environment_vars/*; do
-        . "$f"
-      done
+# Load any exports from files in the environment_vars.
+# environment_vars_snippet
+if [ -d "$HOME/environment_vars" ]; then
+  for f in $HOME/environment_vars/*; do
+    if [ -f "$f" ]; then
+      . "$f"
+    fi
+  done
+fi
 		EOF
   fi
   #.bashrc environment_vars
@@ -122,11 +126,15 @@ configure_shell_environment() {
     echo "Adding environment_vars sourcing to .bashrc"
     cat <<- 'EOF' >> /$HOME/.bashrc
 
-      # Load any exports from files in the environment_vars.
-      # environment_vars_snippet
-      for f in $HOME/environment_vars/*; do
-        . "$f"
-      done
+# Load any exports from files in the environment_vars.
+# environment_vars_snippet
+if [ -d "$HOME/environment_vars" ]; then
+  for f in $HOME/environment_vars/*; do
+    if [ -f "$f" ]; then
+      . "$f"
+    fi
+  done
+fi
 		EOF
   fi
 }
